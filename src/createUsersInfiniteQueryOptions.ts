@@ -1,5 +1,5 @@
-import { infiniteQueryOptions } from "@tanstack/react-query"
-import { getUsers } from "./api"
+import { infiniteQueryOptions } from "@tanstack/react-query";
+import { getUsers } from "./api";
 
 export default function createUsersInfiniteQueryOptions() {
   return infiniteQueryOptions({
@@ -9,7 +9,7 @@ export default function createUsersInfiniteQueryOptions() {
     getNextPageParam: (lastPage) => {
       return lastPage.pagination.hasMore
         ? lastPage.pagination.currentPage + 1
-        : undefined
+        : undefined;
     },
-  })
+  });
 }

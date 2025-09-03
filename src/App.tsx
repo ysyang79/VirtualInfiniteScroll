@@ -1,36 +1,54 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
-import Card from "./Card"
-import { useRef } from "react"
-import createUsersQueryOptions from "./createUsersQueryOptions"
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import Card from "./Card";
+import { useEffect, useRef, useState } from "react";
+import createUsersQueryOptions from "./createUsersQueryOptions";
+import createUsersInfiniteQueryOptions from "./createUsersInfiniteQueryOptions";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import type { User } from "./types";
 
 function App() {
-  // const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
-  //   useInfiniteQuery(createUsersInfiniteQueryOptions())
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useInfiniteQuery(createUsersInfiniteQueryOptions());
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data: users } = useSuspenseQuery(createUsersQueryOptions())
+  // const { data: data1 } = useSuspenseQuery(createUsersQueryOptions())
 
   // const users = data?.pages.flatMap((page) => page.users) ?? []
+  const [users, setUsers] = useState<User[]>([]);
+  useEffect(() => {
+    if (data) {
+      const allUsers = data.pages.flatMap((page) => page.users);
+      setUsers(allUsers ?? []);
+    }
+  }, [data]);
 
-  // const virtualizer = useVirtualizer({
-  //   count: users?.length ?? 0,
-  //   estimateSize: () => 160,
-  //   getScrollElement: () => scrollRef.current,
-  // })
+  const virtualizer = useVirtualizer({
+    count: users?.length ?? 0,
+    estimateSize: () => 160,
+    getScrollElement: () => scrollRef.current,
+  });
 
-  // const virtualItems = virtualizer.getVirtualItems()
+  useEffect(() => {
+    virtualizer.setOptions((prev) => ({
+      ...prev,
+      count: users?.length ?? 0,
+    }));
+  }, [users, virtualizer]);
 
-  // useEffect(() => {
-  //   const lastItem = virtualItems[virtualItems.length - 1]
-  //   if (
-  //     !hasNextPage ||
-  //     isFetchingNextPage ||
-  //     !lastItem ||
-  //     lastItem.index < users.length - 6
-  //   )
-  //     return
-  //   fetchNextPage()
-  // }, [virtualItems, hasNextPage, isFetchingNextPage, users, fetchNextPage])
+  const virtualItems = virtualizer.getVirtualItems();
+
+  useEffect(() => {
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (
+      !hasNextPage ||
+      isFetchingNextPage ||
+      !lastItem ||
+      lastItem.index < users.length - 6
+    )
+      return;
+
+    fetchNextPage();
+  }, [virtualItems, hasNextPage, isFetchingNextPage, users, fetchNextPage]);
 
   return (
     <div
@@ -40,13 +58,13 @@ function App() {
       {users?.map((user) => (
         <Card key={user._id} user={user} />
       ))}
-      {/* <div
+      <div
         className="relative"
         style={{ height: `${virtualizer.getTotalSize()}px` }}
       >
         {virtualItems.map((vItem) => {
-          const user = users?.[vItem.index]
-          if (!user) return null
+          const user = users?.[vItem.index];
+          if (!user) return null;
           return (
             <div
               key={vItem.key}
@@ -59,16 +77,16 @@ function App() {
             >
               <Card key={user._id} user={user} />
             </div>
-          )
+          );
         })}
       </div>
       {isFetchingNextPage && (
         <div className="flex justify-center items-center">
           Loading More data...
         </div>
-      )} */}
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

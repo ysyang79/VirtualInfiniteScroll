@@ -1,11 +1,11 @@
-import { type User } from "./types"
+import { type User } from "./types";
 
 type CardProps = {
-  user: User
-}
+  user: User;
+};
 
 export default function Card({ user }: CardProps) {
-  const { _id, name, email, createdAt } = user
+  const { _id, name, email, createdAt } = user;
   return (
     <div className="bg-white rounded-xl relative w-144">
       <div className="p-6">
@@ -44,5 +44,5 @@ export default function Card({ user }: CardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
